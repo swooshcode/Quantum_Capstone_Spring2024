@@ -1,4 +1,4 @@
-# Quantum_Capstone_Spring2024
+# Quantum Capstone Spring 2024
 
 # Neural Network Model with Neurotransmitter Dynamics
 
