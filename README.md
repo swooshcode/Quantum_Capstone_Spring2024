@@ -1,6 +1,6 @@
 # Quantum Capstone Spring 2024
 
-# Neural Network Model with Neurotransmitter Dynamics
+# Quantum Neural Network Model with Neurotransmitter Dynamics
 
 This repository contains the implementation of a neural network model that incorporates neurotransmitter dynamics and interactions. The model simulates the release, reuptake, and effects of various neurotransmitters on neuronal positions and movement probabilities.
 
@@ -17,6 +17,33 @@ The model consists of the following components:
 - Evaluation on a validation set and logging of training metrics
 
 The model is implemented in Python using NumPy for numerical computations.
+
+## Changes
+
+### Update 1: Optimization Techniques
+
+Several optimization techniques have been added to enhance the network architecture, loss function, and hyperparameters for real-world scenarios. These include:
+
+- Experimenting with different numbers of layers and neurons
+- Considering convolutional and recurrent layers for specific tasks
+- Investigating attention mechanisms and different activation functions
+- Choosing appropriate loss functions and regularization techniques
+- Performing hyperparameter tuning
+- Investigating quantum algorithms and quantum circuit integration
+- Applying data preprocessing and augmentation techniques
+- Using appropriate evaluation metrics and validation strategies
+- Continuously monitoring and refining the model based on real-world performance
+
+### Update 2: Training Process
+
+The model is trained using a combination of backpropagation, weight updates, and iterative validation. The training process includes:
+
+1. Loading and separation of data into training and validation sets
+2. Creation of batches for efficient training
+3. Training loop with gradient computation and weight updates using the Adam optimizer
+4. Evaluation on the validation set to assess generalization performance
+5. Logging and monitoring of training metrics
+6. Main loop for updating neurotransmitter levels and performing neural network computations
 
 ## Getting Started
 
@@ -46,28 +73,19 @@ The model's hyperparameters and settings can be configured in the `main.py` file
 - `num_epochs`: Number of training epochs
 - `batch_size`: Batch size for training
 
- The model is trained using a combination of backpropagation, weight updates, and iterative validation. Here's a detailed breakdown of how the training process works:
-
-1. Loading and Separation of Data: The data is loaded or separated into training and validation sets. This involves splitting the available data into two parts, typically using a certain percentage for training and the remainder for validation.
-
-2. Creation of Batches: The training data is segmented into smaller batches to facilitate the training process. Each batch contains a subset of the training data and is used for successive iterations during training. This is often done to ensure that the entire dataset doesn't need to be loaded into memory at once, especially in the case of large datasets.
-
-3. Training Loop: The training process iterates over the batches of training data for a certain number of epochs (defined by the `num_epochs` hyperparameter). For each batch, the following steps are typically performed:
-   - Model Processing: The model function is used to process the input and compute the activations.
-   - Gradient Computation: The gradients of the loss function with respect to the model's parameters are computed using backpropagation. This involves calculating how the loss changes with respect to each parameter in the network.
-   - Weight Updates: The weights of the neural network are updated based on these gradients and a specific optimizer (in this case, the Adam optimizer). The Adam optimizer is a popular method for adapting the learning rate for each parameter.
-
-4. Evaluation on Validation Set: After training on each batch, the model's performance is evaluated using the validation set. This is to ensure that the model is generalizing well and not overfitting to the training data.
-
-5. Logging and Monitoring: Metrics such as validation loss are often logged and monitored during the training process to track the model's performance.
-
-6. Main Loop: After the initial training loop, the model continues to iterate through a main loop, updating neurotransmitter levels, computing neural network activations, and performing weight updates using the Adam optimizer.
-
-The entire process involves a combination of forward and backward passes through the neural network, utilizing the provided data, and iteratively adjusting model parameters to minimize the loss function and improve overall performance.
-
-This comprehensive training process aims to optimize the model's performance and enable it to make accurate predictions or classifications based on the input data.
-
 You can modify these parameters according to your requirements or experiment with different values to observe their impact on the model's performance.
+
+## Ways to Improve
+
+Here are some ways that you can improve the code:
+
+1. Implement additional activation functions and experiment with their impact on the model's performance.
+2. Explore different network architectures, such as convolutional or recurrent layers, depending on the specific task and data characteristics.
+3. Investigate the integration of quantum algorithms and quantum circuits to leverage quantum computing capabilities.
+4. Implement data preprocessing and augmentation techniques to enhance the model's robustness and generalization ability.
+5. Conduct extensive hyperparameter tuning to find the optimal combination of hyperparameters for the specific problem.
+6. Incorporate additional evaluation metrics and validation strategies to assess the model's performance comprehensively.
+7. Continuously monitor and refine the model based on real-world performance and user feedback.
 
 ## Contributing
 
@@ -80,6 +98,3 @@ This project is licensed under the [MIT License](LICENSE).
 ## Acknowledgments
 
 This project was developed as a capstone project for "The Coding School," from Quibit by Qubit, a Quantum research organization partnered with Google. Special thanks to my family for their guidance and support throughout the project.
-```
-
-This README.md file provides an overview of the project, instructions for getting started, configuration details, contributing guidelines, license information, and acknowledgments. You can customize the content as needed, such as adding more detailed installation instructions, project-specific dependencies, or any additional sections you find relevant.
