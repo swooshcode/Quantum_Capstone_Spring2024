@@ -283,4 +283,66 @@ while True:
 
     probabilities = state**2
 
-    
+    # Simulate measurements
+
+    counts = np.random.multinomial(num_measurements, probabilities)
+
+    # Plot measurements histogram
+
+    plt.figure()
+
+    plt.bar(range(len(counts)), counts)
+
+    plt.xlabel('State')
+
+    plt.ylabel('Count')
+
+    plt.title('Histogram of Measurement Results (Rotational Y Gate)')
+
+    plt.show()
+
+    # Visualization with Grok sphere
+
+    fig = plt.figure()
+
+    ax = fig.add_subplot(111, projection='3d')
+
+    # Plot input features as points on the x-axis
+
+    x = X_data
+
+    y = np.zeros_like(x)
+
+    z = np.zeros_like(x)
+
+    ax.scatter(x, y, z, c='b', label='Input Features')
+
+    # Plot target output as points on the y-axis
+
+    x = np.zeros_like(y_data)
+
+    y = y_data
+
+    z = np.zeros_like(y_data)
+
+    ax.scatter(x, y, z, c='g', label='Target Output')
+
+    # Plot predicted probabilities as points on the z-axis
+
+    x = np.zeros_like(activations)
+
+    y = np.zeros_like(activations)
+
+    z = activations
+
+    ax.scatter(x, y, z, c='r', label='Predicted Probabilities')
+
+    ax.set_xlabel('Input Features')
+
+    ax.set_ylabel('Target Output')
+
+    ax.set_zlabel('Predicted Probabilities')
+
+    ax.legend()
+
+    plt.show()
