@@ -97,4 +97,4 @@ This project is licensed under the [MIT License](LICENSE).
 
 ## Acknowledgments
 
-This project was developed as a capstone project for "The Coding School," from Quibit by Qubit, a Quantum research organization partnered with Google. Special thanks to my family for their guidance and support throughout the project.
+This project was developed as a capstone project for "The Coding School," from Quibit by Qubit, a Quantum research organization partnered with Google. Special thanks to my family and friends for their guidance and support throughout the project.
