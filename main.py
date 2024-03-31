@@ -1,9 +1,34 @@
 import numpy as np
+from sklearn.model_selection import train_test_split
+import cirq
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+import random
+
+# Activation functions
+def relu(x):
+    return np.maximum(0, x)
+
+def sigmoid(x):
+    return 1 / (1 + np.exp(-x))
+
+def tanh(x):
+    return np.tanh(x)
+
+def apply_activation(x, activation_function):
+    if activation_function == 'relu':
+        return relu(x)
+    elif activation_function == 'sigmoid':
+        return sigmoid(x)
+    elif activation_function == 'tanh':
+        return tanh(x)
+    # Add more activation functions as needed
 
 # Hyperparameters
 num_neurons = 100
 num_layers = 3
-activation_function = 'relu'
+hidden_activation_function = 'relu'
+output_activation_function = 'sigmoid'
 regularization_rate = 0.01
 optimizer = 'adam'
 learning_rate = 0.001
@@ -29,14 +54,6 @@ position_states[4, 1] = 1
 coin_state = np.array([1, 1j]) / np.sqrt(2)
 
 # Helper functions
-def relu(x):
-    return np.maximum(0, x)
-
-def apply_activation(x, activation_function):
-    if activation_function == 'relu':
-        return relu(x)
-    # Add other activation functions as needed
-
 def l2_regularization(weights, regularization_rate):
     return regularization_rate * np.sum(np.square(weights))
 
@@ -68,16 +85,19 @@ def model(position_states, neurotransmitter_states, weights):
     input_states = np.concatenate((position_states.reshape(num_neurons, -1), neurotransmitter_states), axis=1)
 
     layer_outputs = [input_states]
-    for layer_idx in range(num_layers):
+    for layer_idx in range(num_layers - 1):
         weights_idx = layer_idx * 2
         biases_idx = weights_idx + 1
         layer_input = layer_outputs[-1]
         layer_weights = weights[weights_idx]
         layer_biases = weights[biases_idx]
         layer_output = np.dot(layer_input, layer_weights.T) + layer_biases
-        layer_outputs.append(apply_activation(layer_output, activation_function))
+        layer_outputs.append(apply_activation(layer_output, hidden_activation_function))
 
-    activations = layer_outputs[-1]
+    output_layer_output = np.dot(layer_outputs[-1], weights[-2].T) + weights[-1]
+    output_activation = apply_activation(output_layer_output, output_activation_function)
+
+    activations = output_activation
 
     regularization_loss = 0
     for layer_idx in range(num_layers):
@@ -87,7 +107,7 @@ def model(position_states, neurotransmitter_states, weights):
 
     position_states = interact_with_neurotransmitters(position_states, neurotransmitter_states)
 
-    return position_states, activations, regularization_loss
+    return position_states, activations, regularization_loss, layer_outputs
 
 # Weight initialization
 def xavier_initialization(input_size, output_size):
@@ -126,20 +146,49 @@ def update_weights_adam(weights, grads, m, v):
 
     return updated_weights, updated_m, updated_v
 
-# Compute gradients (placeholder)
-def compute_gradients(activations, regularization_loss):
-    # Implement backpropagation to compute gradients
-    grads = []
-    for w in weights:
-        grads.append(np.zeros_like(w))
-    return grads
+# Compute gradients
+def compute_gradients(activations, targets, weights, layer_outputs):
+    # Compute the gradients using backpropagation
+    num_samples = activations.shape[0]
 
-# Load or separate data
-X_train, y_train, X_val, y_val = load_or_separate_data()
+    # Compute the loss
+    loss = np.mean((activations - targets)**2)
+
+    # Compute the gradients
+    output_gradient = 2 * (activations - targets) / num_samples
+    input_gradient = np.dot(output_gradient, weights[-2])
+    weights_gradient = np.dot(layer_outputs[-2].T, output_gradient)
+    biases_gradient = np.sum(output_gradient, axis=0)
+
+    # Store the gradients
+    grads = [weights_gradient, biases_gradient]
+
+    return grads, loss
+
+# Generate synthetic data for testing
+num_samples = 1000
+num_features = 300
+X_data = np.random.rand(num_samples, num_features)
+y_data = np.random.randint(0, 2, size=(num_samples, num_features))
+
+# Split data into training and validation sets
+X_train, X_val, y_train, y_val = train_test_split(X_data, y_data, test_size=0.2, random_state=42)
 
 # Create batches
+def create_batches(X, y, batch_size):
+    batches = []
+    for i in range(0, len(X), batch_size):
+        X_batch = X[i:i+batch_size]
+        y_batch = y[i:i+batch_size]
+        batches.append((X_batch, y_batch))
+    return batches
+
 train_batches = create_batches(X_train, y_train, batch_size)
 val_batches = create_batches(X_val, y_val, batch_size)
+
+# Training loop
+m = [np.zeros_like(w) for w in weights]
+v = [np.zeros_like(w) for w in weights]
 
 # Training loop
 m = [np.zeros_like(w) for w in weights]
@@ -148,9 +197,9 @@ v = [np.zeros_like(w) for w in weights]
 for epoch in range(num_epochs):
     # Iterate over batches
     for batch in train_batches:
-        position_states, activations, regularization_loss = model(batch[0], batch[1], weights)
+        position_states, activations, regularization_loss, layer_outputs = model(batch[0], batch[1], weights)
 
-        grads = compute_gradients(activations, regularization_loss)
+        grads, loss = compute_gradients(activations, batch[1], weights, layer_outputs)
 
         for i, (w, g, m_i, v_i) in enumerate(zip(weights, grads, m, v)):
             m_i = beta1 * m_i + (1 - beta1) * g
@@ -162,8 +211,9 @@ for epoch in range(num_epochs):
     # Evaluate on validation set
     val_loss = 0
     for val_batch in val_batches:
-        _, val_activations, val_reg_loss = model(val_batch[0], val_batch[1], weights)
-        val_loss += compute_loss(val_activations, val_batch[2], val_reg_loss)
+        _, val_activations, _, val_layer_outputs = model(val_batch[0], val_batch[1], weights)
+        _, batch_loss = compute_gradients(val_activations, val_batch[1], weights, val_layer_outputs)
+        val_loss += batch_loss
     val_loss /= len(val_batches)
 
     # Print/log metrics
@@ -185,18 +235,52 @@ while True:
         weights, m, v = update_weights_adam(weights, activations, regularization_loss, m, v)
 
     steps += 1
-    # Print or analyze results
-    print(steps)
 
-# Helper functions (placeholders)
-def load_or_separate_data():
-    # Load or separate data into training and validation sets
-    return X_train, y_train, X_val, y_val
+    # Quantum Simulation
+    # Create quantum states
+    zero_state = np.array([1, 0])
+    one_state = np.array([0, 1])
+    zero_one_state = zero_state + one_state
 
-def create_batches(X, y, batch_size):
-    # Create batches from the data
-    return batches
+    # Normalize the zero_one_state
+    length = np.sqrt(np.dot(zero_one_state, zero_one_state))
+    zero_one_state = zero_one_state / length
 
-def compute_loss(activations, targets, regularization_loss):
-    # Compute the loss function based on activations, targets, and regularization
-    return loss
+    # Define quantum gates
+    id_gate = np.array([[1, 0], [0, 1]])
+    x_gate = np.array([[0, 1], [1, 0]])
+    z_gate = np.array([[1, 0], [0, -1]])
+    h_gate = 1/np.sqrt(2) * np.array([[1, 1], [1, -1]])
+
+    # Apply a gate to the zero_one_state
+    state = np.dot(z_gate, zero_one_state)
+    probabilities = state**2
+
+    # Simulate measurements
+    num_measurements = 500
+    counts = np.random.multinomial(num_measurements, probabilities)
+
+    # Plot measurements histogram
+    plt.figure()
+    plt.bar(range(len(counts)), counts)
+    plt.xlabel('State')
+    plt.ylabel('Count')
+    plt.title('Histogram of Measurement Results (Zero-One State)')
+    plt.show()
+
+    # Simulate a rotational Y gate
+    theta = np.radians(30)
+    ry_gate = np.array([
+        [np.cos(theta / 2), -np.sin(theta / 2)],
+        [np.sin(theta / 2), np.cos(theta / 2)]
+    ])
+
+    state = zero_state
+    circuit = [ry_gate]
+
+    for gate in circuit:
+        state = np.dot(gate, state)
+
+    probabilities = state**2
+
+    
