@@ -79,13 +79,17 @@ You can modify these parameters according to your requirements or experiment wit
 
 Here are some ways that you can improve the code:
 
-1. Implement additional activation functions and experiment with their impact on the model's performance.
-2. Explore different network architectures, such as convolutional or recurrent layers, depending on the specific task and data characteristics.
-3. Investigate the integration of quantum algorithms and quantum circuits to leverage quantum computing capabilities.
-4. Implement data preprocessing and augmentation techniques to enhance the model's robustness and generalization ability.
-5. Conduct extensive hyperparameter tuning to find the optimal combination of hyperparameters for the specific problem.
-6. Incorporate additional evaluation metrics and validation strategies to assess the model's performance comprehensively.
-7. Continuously monitor and refine the model based on real-world performance and user feedback.
+1. Change the values of these variables based on real-world scenarios:
+```
+num_samples, num_features, X_data, y_data.
+```
+2. Implement additional activation functions and experiment with their impact on the model's performance.
+3. Explore different network architectures, such as convolutional or recurrent layers, depending on the specific task and data characteristics.
+4. Investigate the integration of quantum algorithms and quantum circuits to leverage quantum computing capabilities.
+5. Implement data preprocessing and augmentation techniques to enhance the model's robustness and generalization ability.
+6. Conduct extensive hyperparameter tuning to find the optimal combination of hyperparameters for the specific problem.
+7. Incorporate additional evaluation metrics and validation strategies to assess the model's performance comprehensively.
+8. Continuously monitor and refine the model based on real-world performance and user feedback.
 
 ## Contributing
 

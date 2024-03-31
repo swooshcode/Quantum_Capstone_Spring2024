@@ -81,8 +81,8 @@ def interact_with_neurotransmitters(position_states, neurotransmitter_states):
     return updated_position_states
 
 # Model function
-def model(position_states, neurotransmitter_states, weights):
-    input_states = np.concatenate((position_states.reshape(num_neurons, -1), neurotransmitter_states), axis=1)
+def model(position_states_batch, neurotransmitter_states_batch, weights):
+    input_states = np.concatenate((position_states_batch.reshape(batch_size, -1), neurotransmitter_states_batch), axis=1)
 
     layer_outputs = [input_states]
     for layer_idx in range(num_layers - 1):
@@ -105,9 +105,9 @@ def model(position_states, neurotransmitter_states, weights):
         layer_weights = weights[weights_idx]
         regularization_loss += l2_regularization(layer_weights, regularization_rate)
 
-    position_states = interact_with_neurotransmitters(position_states, neurotransmitter_states)
+    position_states_batch = interact_with_neurotransmitters(position_states_batch, neurotransmitter_states_batch)
 
-    return position_states, activations, regularization_loss, layer_outputs
+    return position_states_batch, activations, regularization_loss, layer_outputs
 
 # Weight initialization
 def xavier_initialization(input_size, output_size):
@@ -174,32 +174,20 @@ y_data = np.random.randint(0, 2, size=(num_samples, num_features))
 # Split data into training and validation sets
 X_train, X_val, y_train, y_val = train_test_split(X_data, y_data, test_size=0.2, random_state=42)
 
-# Create batches
-def create_batches(X, y, batch_size):
-    batches = []
-    for i in range(0, len(X), batch_size):
-        X_batch = X[i:i+batch_size]
-        y_batch = y[i:i+batch_size]
-        batches.append((X_batch, y_batch))
-    return batches
-
-train_batches = create_batches(X_train, y_train, batch_size)
-val_batches = create_batches(X_val, y_val, batch_size)
-
-# Training loop
-m = [np.zeros_like(w) for w in weights]
-v = [np.zeros_like(w) for w in weights]
-
 # Training loop
 m = [np.zeros_like(w) for w in weights]
 v = [np.zeros_like(w) for w in weights]
 
 for epoch in range(num_epochs):
     # Iterate over batches
-    for batch in train_batches:
-        position_states, activations, regularization_loss, layer_outputs = model(batch[0], batch[1], weights)
+    for batch_idx in range(0, len(X_train), batch_size):
+        batch_position_states = position_states[batch_idx:batch_idx+batch_size]
+        batch_neurotransmitter_states = neurotransmitter_states[batch_idx:batch_idx+batch_size]
+        batch_weights = weights[batch_idx:batch_idx+batch_size]
 
-        grads, loss = compute_gradients(activations, batch[1], weights, layer_outputs)
+        position_states_batch, activations, regularization_loss, layer_outputs = model(batch_position_states, batch_neurotransmitter_states, batch_weights)
+
+        grads, loss = compute_gradients(activations, y_train[batch_idx:batch_idx+batch_size], weights, layer_outputs)
 
         for i, (w, g, m_i, v_i) in enumerate(zip(weights, grads, m, v)):
             m_i = beta1 * m_i + (1 - beta1) * g
@@ -210,11 +198,16 @@ for epoch in range(num_epochs):
 
     # Evaluate on validation set
     val_loss = 0
-    for val_batch in val_batches:
-        _, val_activations, _, val_layer_outputs = model(val_batch[0], val_batch[1], weights)
-        _, batch_loss = compute_gradients(val_activations, val_batch[1], weights, val_layer_outputs)
+    for val_batch_idx in range(0, len(X_val), batch_size):
+        val_batch_position_states = position_states[val_batch_idx:val_batch_idx+batch_size]
+        val_batch_neurotransmitter_states = neurotransmitter_states[val_batch_idx:val_batch_idx+batch_size]
+        val_batch_weights = weights[val_batch_idx:val_batch_idx+batch_size]
+
+        _, val_activations, _, val_layer_outputs = model(val_batch_position_states, val_batch_neurotransmitter_states, val_batch_weights)
+        _, batch_loss = compute_gradients(val_activations, y_val[val_batch_idx:val_batch_idx+batch_size], weights, val_layer_outputs)
         val_loss += batch_loss
-    val_loss /= len(val_batches)
+
+    val_loss /= (len(X_val) // batch_size)
 
     # Print/log metrics
     print(f"Epoch {epoch+1}/{num_epochs}, Validation Loss: {val_loss:.4f}")
@@ -229,10 +222,10 @@ while True:
             release_neurotransmitter(neuron_index, nt_index, release_probability)
             reuptake_neurotransmitter(neuron_index, nt_index, reuptake_rate)
 
-    position_states, activations, regularization_loss = model(position_states, neurotransmitter_states, weights)
+    position_states, activations, regularization_loss, layer_outputs = model(position_states, neurotransmitter_states, weights)
 
     if optimizer == 'adam':
-        weights, m, v = update_weights_adam(weights, activations, regularization_loss, m, v)
+        weights, m, v = update_weights_adam(weights, grads, m, v)
 
     steps += 1
 
@@ -284,65 +277,42 @@ while True:
     probabilities = state**2
 
     # Simulate measurements
-
     counts = np.random.multinomial(num_measurements, probabilities)
 
     # Plot measurements histogram
-
     plt.figure()
-
     plt.bar(range(len(counts)), counts)
-
     plt.xlabel('State')
-
     plt.ylabel('Count')
-
     plt.title('Histogram of Measurement Results (Rotational Y Gate)')
-
     plt.show()
 
     # Visualization with Grok sphere
-
     fig = plt.figure()
-
     ax = fig.add_subplot(111, projection='3d')
 
     # Plot input features as points on the x-axis
-
     x = X_data
-
     y = np.zeros_like(x)
-
     z = np.zeros_like(x)
-
     ax.scatter(x, y, z, c='b', label='Input Features')
 
     # Plot target output as points on the y-axis
-
     x = np.zeros_like(y_data)
-
     y = y_data
-
     z = np.zeros_like(y_data)
-
     ax.scatter(x, y, z, c='g', label='Target Output')
 
     # Plot predicted probabilities as points on the z-axis
-
     x = np.zeros_like(activations)
-
     y = np.zeros_like(activations)
-
     z = activations
-
     ax.scatter(x, y, z, c='r', label='Predicted Probabilities')
 
     ax.set_xlabel('Input Features')
-
     ax.set_ylabel('Target Output')
-
     ax.set_zlabel('Predicted Probabilities')
-
     ax.legend()
 
     plt.show()
+    
