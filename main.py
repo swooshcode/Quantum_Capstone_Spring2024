@@ -37,6 +37,7 @@ beta2 = 0.999
 epsilon = 1e-8
 num_epochs = 100
 batch_size = 32
+num_features = 300 
 
 # Define neurotransmitter types and initial conditions
 neurotransmitters = ["Dopamine", "Serotonin", "GABA", "Glutamate", "Acetylcholine"]
@@ -82,8 +83,8 @@ def interact_with_neurotransmitters(position_states, neurotransmitter_states):
 
 # Model function
 def model(position_states_batch, neurotransmitter_states_batch, weights):
-    input_states = np.concatenate((position_states_batch.reshape(batch_size, -1), neurotransmitter_states_batch), axis=1)
-
+    input_states = position_states_batch
+    
     layer_outputs = [input_states]
     for layer_idx in range(num_layers - 1):
         weights_idx = layer_idx * 2
@@ -93,20 +94,20 @@ def model(position_states_batch, neurotransmitter_states_batch, weights):
         layer_biases = weights[biases_idx]
         layer_output = np.dot(layer_input, layer_weights.T) + layer_biases
         layer_outputs.append(apply_activation(layer_output, hidden_activation_function))
-
+    
     output_layer_output = np.dot(layer_outputs[-1], weights[-2].T) + weights[-1]
     output_activation = apply_activation(output_layer_output, output_activation_function)
-
+    
     activations = output_activation
-
+    
     regularization_loss = 0
     for layer_idx in range(num_layers):
         weights_idx = layer_idx * 2
         layer_weights = weights[weights_idx]
         regularization_loss += l2_regularization(layer_weights, regularization_rate)
-
+    
     position_states_batch = interact_with_neurotransmitters(position_states_batch, neurotransmitter_states_batch)
-
+    
     return position_states_batch, activations, regularization_loss, layer_outputs
 
 # Weight initialization
@@ -114,9 +115,9 @@ def xavier_initialization(input_size, output_size):
     xavier_stddev = np.sqrt(2.0 / (input_size + output_size))
     return np.random.normal(0, xavier_stddev, size=(input_size, output_size))
 
-input_size = num_neurons * 300 + len(neurotransmitters)
-hidden_size = 128
-output_size = num_neurons * 300
+input_size = num_features
+hidden_size = 300
+output_size = num_features
 
 weights = []
 weights.append(xavier_initialization(input_size, hidden_size))
@@ -180,13 +181,12 @@ v = [np.zeros_like(w) for w in weights]
 
 for epoch in range(num_epochs):
     # Iterate over batches
-    for batch_idx in range(0, len(X_train), batch_size):
-        batch_position_states = position_states[batch_idx:batch_idx+batch_size]
+    for batch_idx in range(0,len(X_train), batch_size):
+        batch_position_states = X_train[batch_idx:batch_idx+batch_size]
         batch_neurotransmitter_states = neurotransmitter_states[batch_idx:batch_idx+batch_size]
-        batch_weights = weights[batch_idx:batch_idx+batch_size]
-
-        position_states_batch, activations, regularization_loss, layer_outputs = model(batch_position_states, batch_neurotransmitter_states, batch_weights)
-
+        
+        position_states_batch, activations, regularization_loss, layer_outputs = model(batch_position_states, batch_neurotransmitter_states, weights)
+        
         grads, loss = compute_gradients(activations, y_train[batch_idx:batch_idx+batch_size], weights, layer_outputs)
 
         for i, (w, g, m_i, v_i) in enumerate(zip(weights, grads, m, v)):
