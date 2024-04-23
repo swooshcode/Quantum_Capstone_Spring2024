@@ -36,7 +36,7 @@ beta1 = 0.9  # Adam params
 beta2 = 0.999
 epsilon = 1e-8
 num_epochs = 100
-batch_size = 32
+batch_size = 320
 num_features = 300 
 
 # Define neurotransmitter types and initial conditions
@@ -86,7 +86,7 @@ def model(position_states_batch, neurotransmitter_states_batch, weights):
     input_states = position_states_batch
     
     layer_outputs = [input_states]
-    for layer_idx in range(num_layers - 1):
+    for layer_idx in range(num_layers):
         weights_idx = layer_idx * 2
         biases_idx = weights_idx + 1
         layer_input = layer_outputs[-1]
@@ -123,7 +123,7 @@ weights = []
 weights.append(xavier_initialization(input_size, hidden_size))
 weights.append(np.zeros(hidden_size))
 
-for i in range(num_layers - 2):
+for i in range(num_layers):
     weights.append(xavier_initialization(hidden_size, hidden_size))
     weights.append(np.zeros(hidden_size))
 
@@ -181,7 +181,7 @@ v = [np.zeros_like(w) for w in weights]
 
 for epoch in range(num_epochs):
     # Iterate over batches
-    for batch_idx in range(0,len(X_train), batch_size):
+    for batch_idx in range(len(X_train), batch_size):
         batch_position_states = X_train[batch_idx:batch_idx+batch_size]
         batch_neurotransmitter_states = neurotransmitter_states[batch_idx:batch_idx+batch_size]
         
@@ -198,7 +198,7 @@ for epoch in range(num_epochs):
 
     # Evaluate on validation set
     val_loss = 0
-    for val_batch_idx in range(0, len(X_val), batch_size):
+    for val_batch_idx in range(len(X_val), batch_size):
         val_batch_position_states = position_states[val_batch_idx:val_batch_idx+batch_size]
         val_batch_neurotransmitter_states = neurotransmitter_states[val_batch_idx:val_batch_idx+batch_size]
         val_batch_weights = weights[val_batch_idx:val_batch_idx+batch_size]
@@ -225,7 +225,7 @@ while True:
     position_states, activations, regularization_loss, layer_outputs = model(position_states, neurotransmitter_states, weights)
 
     if optimizer == 'adam':
-        weights, m, v = update_weights_adam(weights, grads, m, v)
+        weights, m, v = update_weights_adam(weights, m, v, v)
 
     steps += 1
 
