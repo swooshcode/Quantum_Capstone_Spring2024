@@ -102,3 +102,8 @@ This project is licensed under the [MIT License](LICENSE).
 ## Acknowledgments
 
 This project was developed as a capstone project for "The Coding School," from Quibit by Qubit, a Quantum research organization partnered with Google. Special thanks to my family and friends for their guidance and support throughout the project.
+
+-------
+<img width="799" alt="Screenshot 2024-05-31 at 2 15 08 PM" src="https://github.com/swooshcode/Quantum_Capstone_Spring2024/assets/115655242/63a5ed7f-2bb9-4419-8454-74f545a23f1d">
+[Phillips QxQ Certificate (23-24).pdf](https://github.com/user-attachments/files/15752968/Phillips.QxQ.Certificate.23-24.pdf)
+-------
